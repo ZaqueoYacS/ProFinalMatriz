@@ -1,54 +1,47 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <conio.h>
-#include <windows.h>
+#include <cstdlib> // Para numeros aleatorios
+#include <ctime>   // Para manejo del tiempo
 using namespace std;
 
-void generarMatriz(int  matriz, int n) {
-    srand(time(0));//números aleatorios
-
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            matriz[i][j] = rand() % 100; // 0 y 99
+void imprimirTablaNumeros(int espacio) {
+    cout << "Tabla de posicion " << espacio << "x" << espacio << endl;
+    for (int i = 0; i < espacio; i++) {
+        cout << string(espacio * 5 + 1, '_') << endl;
+        for (int j = 0; j < espacio; j++) {
+            cout << "| " << (i * espacio + j + 1);
+            if (i * espacio + j + 1 < 10) { //Espacio para los numeros de la tabla, que se vea ordenado
+                cout << " ";
+            }
         }
+        cout << "|" << endl;
     }
+    cout << string(espacio * 5 + 1, '_') << endl;
 }
 
-// Función para mostrar la matriz
-void mostrarMatriz(int matriz, int n) {
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cout << matriz[i][j] ;
+void imprimirTablaRandom(int espacio) {
+    cout << "Tabla de numeros aleatorios " << espacio << "x" << espacio << endl;
+    srand(time(0)); // Semilla para los números aleatorios
+    for (int i = 0; i < espacio; i++) {
+        cout << string(espacio * 5 + 1, '_') << endl;
+        for (int j = 0; j < espacio; j++) {
+            cout << "| " << (rand() % 10); // Números aleatorios entre 0 y 10
+            if ((rand() % 100) < 10) {       // Ajuste del espaciado para números de un solo dígito
+                cout << " ";
+            }
         }
-        cout << endl;
+        cout << "|" << endl;
     }
-}
-
-int generarOperacion() {
-    int operadores;
-    float resultado;
-
-    switch (operadores) {
-        case 1: // Suma
-            break;
-        case 2: // Resta
-            break;
-        case 3: // Multiplicación
-            break;
-        case 4: // División
-            break;
-    }
+    cout << string(espacio * 5 + 1, '_') << endl;
 }
 
 int main() {
-    int n, fila, columna;
-    cout << "Ingrese el tamaño de la matriz (n x n): ";
-    cin >> n;
-    if(n < 3){
-        cout"el tamaño de la matriz no es válido";}
-  
-  mostrarMatriz(int matriz, int n);
+    int espacio;
+    cout << "Ingrese el tamaño de la matriz: ";
+    cin >> espacio;
+
+    imprimirTablaNumeros(espacio);
+    imprimirTablaRandom(espacio);
 
     return 0;
 }
+
