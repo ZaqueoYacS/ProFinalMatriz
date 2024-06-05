@@ -6,6 +6,8 @@
 
 using namespace std;
 
+const int PUNTOS_PARA_GANAR = 5; // Puntaje máximo necesario para ganar el juego
+
 struct Jugador {
     string nombre;
     int puntos;
@@ -19,7 +21,8 @@ void mostrarMatrices(int matrizNumeros[10][10], int matrizNumeracion[10][10], in
 void revelarTemporalmente(int visible[10][10], int n, int fila, int columna);
 void ocultarCircundantes(int visible[10][10], int n, int fila, int columna);
 bool realizarTurno(Jugador& jugador, int matrizNumeros[10][10], int matrizNumeracion[10][10], int visible[10][10], int n);
-int preguntarContinuar();
+bool verificarGanador(Jugador& jugador1, Jugador& jugador2);
+int preguntarContinuar(); // Cambiado a retornar un entero
 
 int main() {
     int n;
@@ -44,72 +47,52 @@ int main() {
     ingresarNombres(jugador1, jugador2);
     
     int turnos = 0;
-    bool continuar = true;
-    while (continuar) {
-        bool turnoJugador1 = elegirPrimerTurno(jugador1, jugador2);
-        while (true) {
-            if (turnoJugador1) {
-                if (realizarTurno(jugador1, matrizNumeros, matrizNumeracion, visible, n)) {
+    do {
+        while (jugador1.puntos < PUNTOS_PARA_GANAR && jugador2.puntos < PUNTOS_PARA_GANAR) {
+            bool turnoJugador1 = elegirPrimerTurno(jugador1, jugador2);
+            while (true) {
+                if (turnoJugador1) {
+                    realizarTurno(jugador1, matrizNumeros, matrizNumeracion, visible, n);
                     turnoJugador1 = false;
-                }
-            } else {
-                if (realizarTurno(jugador2, matrizNumeros, matrizNumeracion, visible, n)) {
+                } else {
+                    realizarTurno(jugador2, matrizNumeros, matrizNumeracion, visible, n);
                     turnoJugador1 = true;
                 }
-            }
-            turnos++;
-            if (turnos % 2 == 0)            {
-                continuar = preguntarContinuar();
-                break;
-            }
-        }
-        cout << "Puntuaciones:" << endl;
-        cout << jugador1.nombre << ": " << jugador1.puntos << " puntos" << endl;
-        cout << jugador2.nombre << ": " << jugador2.puntos << " puntos" << endl;
-        if (!continuar) {
-            break;
-        }
-    }
-    cout << "¿Desean jugar otra vez? (S/N): ";
-    char jugarOtraVez;
-    cin >> jugarOtraVez;
-    if (jugarOtraVez != 'S' && jugarOtraVez != 's') {
-        return 0;
-    }
-    jugador1.puntos = 0;
-    jugador2.puntos = 0;
-    turnos = 0;
-    continuar = true;
-    while (continuar) {
-        bool turnoJugador1 = elegirPrimerTurno(jugador1, jugador2);
-        while (true) {
-            if (turnoJugador1) {
-                if (realizarTurno(jugador1, matrizNumeros, matrizNumeracion, visible, n)) {
-                    turnoJugador1 = false;
+                turnos++;
+
+                cout << "Puntuaciones:" << endl;
+                cout << jugador1.nombre << ": " << jugador1.puntos << " puntos" << endl;
+                cout << jugador2.nombre << ": " << jugador2.puntos << " puntos" << endl;
+
+                if (verificarGanador(jugador1, jugador2)) {
+                    break;
                 }
-            } else {
-                if (realizarTurno(jugador2, matrizNumeros, matrizNumeracion, visible, n)) {
-                    turnoJugador1 = true;
-                }
-            }
-            turnos++;
-            if (turnos % 2 == 0) {
-                continuar = preguntarContinuar();
-                break;
             }
         }
 
-        cout << "Puntuaciones:" << endl;
-        cout << jugador1.nombre << ": " << jugador1.puntos << " puntos" << endl;
-        cout << jugador2.nombre << ": " << jugador2.puntos << " puntos" << endl;
-
-        if (!continuar) {
-            break;
+        int continuar = preguntarContinuar();
+        if (continuar == 1) {
+            // Reiniciar los puntos y las matrices
+            jugador1.puntos = 0;
+            jugador2.puntos = 0;
+            generarMatriz(matrizNumeros, n);
+            generarMatrizNumeracion(matrizNumeracion, n);
+            // Reiniciar la matriz visible
+            for (int i = 0; i < n; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    visible[i][j] = 0;
+                }
+            }
+        } else {
+            break; // Salir del bucle principal si no quieren continuar jugando
         }
-    }
+    } while (true);
+
+    cout << "¡Felicidades! " << (jugador1.puntos >= PUNTOS_PARA_GANAR ? jugador1.nombre : jugador2.nombre) << " ha ganado el juego." << endl;
 
     return 0;
 }
+
 
 void ingresarNombres(Jugador& jugador1, Jugador& jugador2) {
     cout << "Ingrese el nombre del Jugador 1: ";
@@ -235,59 +218,45 @@ bool realizarTurno(Jugador& jugador, int matrizNumeros[10][10], int matrizNumera
     revelarTemporalmente(visible, n, fila, columna);
     mostrarMatrices(matrizNumeros, matrizNumeracion, visible, n);
 
-    int sumaSuperior = 0, sumaInferior = 0, resultado1 = 0, resultado2 = 0, resultadoFinal = 0;
+    Sleep(10000); // Esperar 10 segundos
+    system("CLS"); 
+
+    ocultarCircundantes(visible, n, fila, columna);
+
+    int sumaCircundante = 0;
 
     for (int i = fila - 1; i <= fila + 1; ++i) {
         for (int j = columna - 1; j <= columna + 1; ++j) {
             if (i >= 0 && i < n && j >= 0 && j < n) {
-                sumaSuperior += (i < fila ? matrizNumeros[i][j] : 0);
-                sumaInferior += (i > fila ? matrizNumeros[i][j] : 0);
+                sumaCircundante += matrizNumeros[i][j];
             }
         }
     }
 
-    resultado1 = sumaSuperior * matrizNumeros[fila][columna + 1];
-    resultado2 = sumaInferior * matrizNumeros[fila][columna - 1];
-    resultadoFinal = (resultado1 + resultado2) * matrizNumeros[fila][columna];
-    Sleep(10000);
-    system("CLS");
-    ocultarCircundantes(visible, n, fila, columna);
+    int resultadoEsperado;
+    cout << jugador.nombre << ", ingresa el resultado de la suma de los números circundantes: ";
+    cin >> resultadoEsperado;
 
-    int entradaUsuario = 0;
-    bool resultadoCorrecto = true;
-
-    cout << jugador.nombre << ", ingresa el resultado de la primera operación: ";
-    cin >> entradaUsuario;
-    if (entradaUsuario != resultado1) {
-        cout << "Respuesta incorrecta." << endl;
-        resultadoCorrecto = false;
-    }
-
-    cout << jugador.nombre << ", ingresa el resultado de la segunda operación: ";
-    cin >> entradaUsuario;
-    if (entradaUsuario != resultado2) {
-        cout << "Respuesta incorrecta." << endl;
-        resultadoCorrecto = false;
-    }
-
-    cout << jugador.nombre << ", ingresa el resultado de la tercera operación: ";
-    cin >> entradaUsuario;
-    if (entradaUsuario != resultadoFinal) {
-        cout << "Respuesta incorrecta." << endl;
-        resultadoCorrecto = false;
-    }
-
-    if (resultadoCorrecto) {
+    if (resultadoEsperado == sumaCircundante) {
         jugador.puntos++;
-        cout << "¡Respuestas correctas! " << jugador.nombre << " ha ganado un punto." << endl;
+        cout << "¡Respuesta correcta! " << jugador.nombre << " ha ganado un punto." << endl;
+    } else {
+        cout << "Respuesta incorrecta." << endl;
     }
 
-    return resultadoCorrecto;
+    Sleep(2000); // Esperar antes de limpiar la pantalla
+    system("CLS"); // Limpiar la pantalla
+
+    return true;
 }
 
 int preguntarContinuar() {
-    char respuesta;
+    int respuesta; // Cambiado a un entero
     cout << "¿Desean continuar jugando? 1=si 2=no: ";
     cin >> respuesta;
-    return (respuesta == 1 || respuesta == 2);
+    return respuesta; // Retorna la respuesta del usuario
+}
+
+bool verificarGanador(Jugador& jugador1, Jugador& jugador2) {
+    return (jugador1.puntos >= PUNTOS_PARA_GANAR || jugador2.puntos >= PUNTOS_PARA_GANAR);
 }
