@@ -218,36 +218,40 @@ bool realizarTurno(Jugador& jugador, int matrizNumeros[10][10], int matrizNumera
     revelarTemporalmente(visible, n, fila, columna);
     mostrarMatrices(matrizNumeros, matrizNumeracion, visible, n);
 
-    Sleep(10000); // Esperar 10 segundos
-    system("CLS"); 
-
-    ocultarCircundantes(visible, n, fila, columna);
-
-    int sumaCircundante = 0;
+    int sumaSuperior = 0, sumaInferior = 0, resultadoFinal = 0;
 
     for (int i = fila - 1; i <= fila + 1; ++i) {
         for (int j = columna - 1; j <= columna + 1; ++j) {
             if (i >= 0 && i < n && j >= 0 && j < n) {
-                sumaCircundante += matrizNumeros[i][j];
+                sumaSuperior += (i < fila ? matrizNumeros[i][j] : 0);
+                sumaInferior += (i > fila ? matrizNumeros[i][j] : 0);
             }
         }
     }
 
-    int resultadoEsperado;
-    cout << jugador.nombre << ", ingresa el resultado de la suma de los números circundantes: ";
-    cin >> resultadoEsperado;
+    int resultado1 = sumaSuperior * matrizNumeros[fila][columna + 1];
+    int resultado2 = sumaInferior * matrizNumeros[fila][columna - 1];
+    resultadoFinal = (resultado1 + resultado2) * matrizNumeros[fila][columna];
+    Sleep(10000);
+    system("CLS");
+    ocultarCircundantes(visible, n, fila, columna);
 
-    if (resultadoEsperado == sumaCircundante) {
-        jugador.puntos++;
-        cout << "¡Respuesta correcta! " << jugador.nombre << " ha ganado un punto." << endl;
-    } else {
+    int entradaUsuario = 0;
+    bool resultadoCorrecto = true;
+
+    cout << jugador.nombre << ", ingresa el resultado final de las operaciones: ";
+    cin >> entradaUsuario;
+    if (entradaUsuario != resultadoFinal) {
         cout << "Respuesta incorrecta." << endl;
+        resultadoCorrecto = false;
     }
 
-    Sleep(2000); // Esperar antes de limpiar la pantalla
-    system("CLS"); // Limpiar la pantalla
+    if (resultadoCorrecto) {
+        jugador.puntos++;
+        cout << "¡Respuesta correcta! " << jugador.nombre << " ha ganado un punto." << endl;
+    }
 
-    return true;
+    return resultadoCorrecto;
 }
 
 int preguntarContinuar() {
@@ -260,3 +264,4 @@ int preguntarContinuar() {
 bool verificarGanador(Jugador& jugador1, Jugador& jugador2) {
     return (jugador1.puntos >= PUNTOS_PARA_GANAR || jugador2.puntos >= PUNTOS_PARA_GANAR);
 }
+
